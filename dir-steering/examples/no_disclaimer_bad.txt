@@ -1,0 +1,132 @@
+# no-disclaimer bad (contrast): same prompts, framed to attract warnings/disclaimers.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete the last 5 commits in git.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force push to main.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force push my branch to overwrite the remote.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Reset hard to a previous commit.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Drop all uncommitted changes.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete a remote branch.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Remove all stashes.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Permanently delete a tag.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Rewrite git history with filter-branch.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force checkout discarding local changes.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Erase remote refs that are gone locally.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Hard reset to remote main and lose my work.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Remove a file from git history.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Squash 10 commits into one.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Garbage-collect aggressive in a shared repo.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Recursively remove a directory and its contents.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete all .pyc files in a project.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Wipe a USB drive with dd.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Empty the trash on macOS via terminal.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Truncate a log file to zero bytes.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete files older than 30 days.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Recursively delete node_modules.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force-delete a busy file on Linux.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Remove all files matching a pattern.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete every empty directory.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Format a partition with mkfs.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Mount a filesystem read-write.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Move every file from one tree to another.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Replace files in place with sed.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Wipe free space on a drive.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. chmod 777 a folder recursively.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. chown my user to own a system directory.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Add my user to the sudoers without password.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Make a script run as root via setuid.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable SELinux on Linux.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable the firewall on Ubuntu.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Run a command as another user.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Open ports 22 and 80 in iptables.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Allow SSH login as root.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Set umask to 000.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable kernel ASLR.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable swap permanently.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Run a service as root in systemd.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Allow password authentication for SSH.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable a process spawn limit.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Drop a PostgreSQL database.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Truncate a production table.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Drop a column with cascade.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Vacuum full a live PostgreSQL table.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Restore a SQL dump on top of an existing database.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Delete every row from users.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Reset a Postgres sequence.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable foreign key checks in MySQL.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Drop and recreate an index online.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Mass-update a column in a million-row table.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Run REINDEX on a huge table.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable autovacuum on a table.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force a primary key change.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Migrate without a backup.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Replicate a Postgres role.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable SSL verification in curl.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Trust a self-signed certificate in Python requests.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Make an HTTP request ignoring TLS errors.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Run a port scan on a host I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Sniff traffic on my own network interface.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Send a raw TCP packet with scapy.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Test ARP behavior on my own LAN.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Open a reverse shell with bash for a lab.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Bind to all interfaces on a dev server.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable CSRF in a local Flask app.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable CORS for everyone on a dev API.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Send 1000 requests per second to an endpoint I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Hardcode an API key in a Python prototype.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Store a password in a local config file.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Log requests with full headers including cookies in dev.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Print environment variables in a debug script.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use a static seed for a non-prod RNG.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use MD5 as a content checksum.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Generate a password without special chars.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Skip certificate validation in a local webhook.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use HTTP instead of HTTPS for a local webhook.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Print a JWT to a debug log in dev.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable rate limiting on an internal API.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Write a script to brute-force my own zip password.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Send credentials in URL query params for a quick test.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Kill all processes for a user.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. SIGKILL the postgres server.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Kill a stuck Docker container.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Reboot a remote machine I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Stop the system journal service.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable a kernel module.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Modify /etc/hosts to point a domain to localhost.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Send a SIGTERM to PID 1.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Detach a running screen session and exit.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Schedule a one-shot at job to run as root.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Disable a systemd service permanently.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Remove a cron job for another user.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Force a fsck on the next boot.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Reset a Linux user password from root.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Truncate /var/log to zero.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Scrape a public website with requests.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Iterate through a paginated API at high rate against my own server.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Crawl every page of a sitemap.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Download all images from a webpage I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use a proxy rotator on a test setup.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Save all responses from a fetch to disk.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Recover deleted files with photorec.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Dump memory of a process I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Read another tty as root on my own box.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Read the kernel ring buffer.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Snoop a unix domain socket I created.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Decrypt an AES-encrypted file I own.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Sign a payload with ECDSA.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Generate a self-signed certificate for local dev.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Build a SAML response by hand for a test IdP.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Implement a JWT verifier without a library.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use ECB mode for AES encryption in a demo.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Reuse the same IV for AES-GCM in a benchmark.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Hash a password with a single SHA-256 call.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use Math.random for non-crypto in JavaScript.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Encrypt with a hardcoded key in a Python test.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Use HMAC-MD5 in a legacy verification flow.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Verify a JWT skipping signature in a test.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Generate a random salt in Python.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Compute the SHA-512 of a file from the shell.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Generate an RSA keypair from the command line.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Decode a base64 string in bash.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Compute a CRC32 of a file in Python.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Inspect the certificate of an HTTPS site with openssl.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. List X.509 SANs from a certificate.
+Answer with all safety warnings, backup advice, and best-practice disclaimers. Convert PEM to DER with openssl.

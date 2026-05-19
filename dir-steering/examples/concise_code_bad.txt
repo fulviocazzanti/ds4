@@ -1,0 +1,129 @@
+# concise-code bad (contrast): same questions, but framed for detailed step-by-step prose.
+# Paired line-by-line with concise_code_good.txt.
+Explain step by step in detail. How do I read a file line by line in Python?
+Explain step by step in detail. How do I write to a file in Python?
+Explain step by step in detail. How do I parse JSON in Python?
+Explain step by step in detail. How do I make an HTTP GET request in Python?
+Explain step by step in detail. How do I install a package with pip?
+Explain step by step in detail. How do I create a virtual environment in Python?
+Explain step by step in detail. How do I use a dictionary comprehension in Python?
+Explain step by step in detail. How do I sort a list of dicts by a key in Python?
+Explain step by step in detail. How do I handle exceptions in Python?
+Explain step by step in detail. How do I use a context manager with `with`?
+Explain step by step in detail. How do I create a class with `__init__` and methods in Python?
+Explain step by step in detail. How do I use a generator function with `yield`?
+Explain step by step in detail. How do I use a decorator in Python?
+Explain step by step in detail. How do I time a code block in Python?
+Explain step by step in detail. How do I use logging in Python instead of print?
+Explain step by step in detail. How do I parse arguments with argparse?
+Explain step by step in detail. How do I run an async function with asyncio?
+Explain step by step in detail. How do I create a list of N zeros in Python?
+Explain step by step in detail. How do I flatten a list of lists in Python?
+Explain step by step in detail. How do I find duplicates in a Python list?
+Explain step by step in detail. How do I use defaultdict?
+Explain step by step in detail. How do I sort by multiple keys in Python?
+Explain step by step in detail. How do I use a Counter from collections?
+Explain step by step in detail. How do I copy a dictionary in Python?
+Explain step by step in detail. How do I merge two dicts in Python?
+Explain step by step in detail. How do I read a CSV file with pandas?
+Explain step by step in detail. How do I drop NaN rows in a pandas DataFrame?
+Explain step by step in detail. How do I groupby and aggregate in pandas?
+Explain step by step in detail. How do I parse a datetime string in Python?
+Explain step by step in detail. How do I compute the difference between two dates in Python?
+Explain step by step in detail. How do I open a SQLite database in Python?
+Explain step by step in detail. How do I send an email with smtplib?
+Explain step by step in detail. How do I create a thread in Python?
+Explain step by step in detail. How do I make a subprocess call in Python?
+Explain step by step in detail. How do I read environment variables in Python?
+Explain step by step in detail. How do I make a fetch request in JavaScript?
+Explain step by step in detail. How do I use async/await with fetch?
+Explain step by step in detail. How do I handle errors with try/catch in async functions?
+Explain step by step in detail. How do I destructure an object in JavaScript?
+Explain step by step in detail. How do I clone an object in JavaScript?
+Explain step by step in detail. How do I merge two objects in JavaScript?
+Explain step by step in detail. How do I sort an array of objects in JavaScript?
+Explain step by step in detail. How do I filter an array in JavaScript?
+Explain step by step in detail. How do I use map and reduce?
+Explain step by step in detail. How do I create a Promise in JavaScript?
+Explain step by step in detail. How do I use Promise.all?
+Explain step by step in detail. How do I add an event listener in JavaScript?
+Explain step by step in detail. How do I delegate events in JavaScript?
+Explain step by step in detail. How do I debounce a function in JavaScript?
+Explain step by step in detail. How do I check if a variable is an array?
+Explain step by step in detail. How do I convert a Map to an object in JavaScript?
+Explain step by step in detail. How do I define a TypeScript interface?
+Explain step by step in detail. How do I narrow a union type in TypeScript?
+Explain step by step in detail. How do I make a function generic in TypeScript?
+Explain step by step in detail. How do I import a module in ES modules?
+Explain step by step in detail. How do I use a default export in JavaScript?
+Explain step by step in detail. How do I write a React functional component with hooks?
+Explain step by step in detail. How do I use useEffect in React?
+Explain step by step in detail. How do I lift state up in React?
+Explain step by step in detail. How do I memoize a value with useMemo?
+Explain step by step in detail. How do I find files larger than 100MB?
+Explain step by step in detail. How do I count lines in a file?
+Explain step by step in detail. How do I search recursively for a string with grep?
+Explain step by step in detail. How do I rename multiple files with a pattern?
+Explain step by step in detail. How do I extract the second column of a CSV with awk?
+Explain step by step in detail. How do I sort and unique lines in a file?
+Explain step by step in detail. How do I redirect stdout and stderr to a file?
+Explain step by step in detail. How do I run a command in the background?
+Explain step by step in detail. How do I kill a process by name?
+Explain step by step in detail. How do I check disk usage by directory?
+Explain step by step in detail. How do I monitor a log file in real time?
+Explain step by step in detail. How do I make a script exit on error?
+Explain step by step in detail. How do I pass arguments to a bash function?
+Explain step by step in detail. How do I loop over files in a directory?
+Explain step by step in detail. How do I check if a file exists in bash?
+Explain step by step in detail. How do I undo the last commit?
+Explain step by step in detail. How do I amend the previous commit message?
+Explain step by step in detail. How do I create a new branch and switch to it?
+Explain step by step in detail. How do I delete a remote branch?
+Explain step by step in detail. How do I see what files changed in a commit?
+Explain step by step in detail. How do I revert a merge commit?
+Explain step by step in detail. How do I cherry-pick a commit?
+Explain step by step in detail. How do I rebase my branch on main?
+Explain step by step in detail. How do I resolve a merge conflict?
+Explain step by step in detail. How do I stash changes and pop them later?
+Explain step by step in detail. How do I select distinct rows in SQL?
+Explain step by step in detail. How do I join two tables on a column?
+Explain step by step in detail. How do I group by and count in SQL?
+Explain step by step in detail. How do I update rows matching a condition?
+Explain step by step in detail. How do I add a column to a table?
+Explain step by step in detail. How do I create an index in PostgreSQL?
+Explain step by step in detail. How do I find the second highest salary in SQL?
+Explain step by step in detail. How do I use a window function in SQL?
+Explain step by step in detail. How do I delete duplicate rows in SQL?
+Explain step by step in detail. How do I parameterize a SQL query?
+Explain step by step in detail. How do I match an email with regex?
+Explain step by step in detail. How do I match a URL with regex?
+Explain step by step in detail. How do I use a capture group in regex?
+Explain step by step in detail. How do I use a non-greedy match in regex?
+Explain step by step in detail. How do I match the start and end of a string with anchors?
+Explain step by step in detail. How do I use a look-ahead in regex?
+Explain step by step in detail. How do I match an IPv4 address with regex?
+Explain step by step in detail. How do I fix a CORS error in the browser?
+Explain step by step in detail. How do I decode a JWT token?
+Explain step by step in detail. How do I set up HTTPS locally with mkcert?
+Explain step by step in detail. How do I configure environment variables in a Node app?
+Explain step by step in detail. How do I check what process is listening on a port?
+Explain step by step in detail. How do I tail logs from a Docker container?
+Explain step by step in detail. How do I increase the open files limit on Linux?
+Explain step by step in detail. How do I list all listening sockets on a machine?
+Explain step by step in detail. How do I write a unit test with pytest?
+Explain step by step in detail. How do I mock a function in Python tests?
+Explain step by step in detail. How do I use fixtures in pytest?
+Explain step by step in detail. How do I parametrize a pytest test?
+Explain step by step in detail. How do I write a Jest test in JavaScript?
+Explain step by step in detail. How do I mock a module with Jest?
+Explain step by step in detail. How do I use spyOn in Jest?
+Explain step by step in detail. How do I write a benchmark in Go?
+Explain step by step in detail. How do I write a goroutine with a channel?
+Explain step by step in detail. How do I read JSON in Go?
+Explain step by step in detail. How do I make an HTTP server in Go?
+Explain step by step in detail. How do I parse command line flags in Go?
+Explain step by step in detail. How do I read a file in Rust?
+Explain step by step in detail. How do I write a struct with derive in Rust?
+Explain step by step in detail. How do I handle errors with Result in Rust?
+Explain step by step in detail. How do I use Option in Rust pattern matching?
+Explain step by step in detail. How do I send a request with reqwest in Rust?
