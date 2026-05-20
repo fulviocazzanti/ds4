@@ -1346,7 +1346,6 @@ static cli_config parse_options(int argc, char **argv) {
         }
     }
 
-    (void)dir_steering_slot;
     if (c.gen.imatrix_output_path && !c.gen.imatrix_dataset_path) {
         fprintf(stderr, "ds4: --imatrix-out requires --imatrix-dataset\n");
         exit(2);

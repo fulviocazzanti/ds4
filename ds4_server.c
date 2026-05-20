@@ -12004,7 +12004,6 @@ static server_config parse_options(int argc, char **argv) {
                    "ds4-server: --kv-cache-cold-max-tokens must be 0 or >= --kv-cache-min-tokens");
         exit(2);
     }
-    (void)dir_steering_slot;
     return c;
 }
 

@@ -49,16 +49,6 @@
 
 #define DS4_NEG_INF (-1.0e30f)
 #define DS4_POS_INF ( 1.0e30f)
-
-/* Internal representation of a directional-steering slot held by the engine.
- * Declared up-front so backend graph code (above the engine struct) can take
- * arrays of these without needing the full ds4_engine definition. */
-typedef struct {
-    char *file;
-    float *dirs;          /* DS4_N_LAYER * DS4_N_EMBD floats, owned; NULL when not loaded. */
-    float attn_scale;
-    float ffn_scale;
-} ds4_engine_steering_slot;
 #define DS4_RMS_EPS ( 1.0e-6f)
 #define DS4_HC_EPS  ( 1.0e-6f)
 #define DS4_EXPERT_WEIGHT_SCALE (1.5f)
@@ -608,6 +598,16 @@ static bool read_f32_binary_file(const char *path, float *data, uint64_t n) {
     return true;
 }
 
+/* Internal representation of a directional-steering slot held by the engine.
+ * Declared up-front so backend graph code (above the engine struct) can take
+ * arrays of these without needing the full ds4_engine definition. */
+typedef struct {
+    char *file;
+    float *dirs;          /* DS4_N_LAYER * DS4_N_EMBD floats, owned; NULL when not loaded. */
+    float attn_scale;
+    float ffn_scale;
+} ds4_engine_steering_slot;
+
 static bool cpu_directional_steering_enabled(
         const float *dirs,
         float        scale);
@@ -618,6 +618,22 @@ static void cpu_directional_steering_project_rows(
         uint32_t     il,
         uint32_t     rows,
         float        scale);
+
+static void cpu_apply_steering_ffn(
+        float                                  *x,
+        uint32_t                                il,
+        uint32_t                                rows,
+        const ds4_engine_steering_slot         *slots,
+        int                                     n_slots);
+
+static void cpu_apply_steering_attn(
+        float                                  *x,
+        uint32_t                                il,
+        uint32_t                                rows,
+        const ds4_engine_steering_slot         *slots,
+        int                                     n_slots);
+
+static bool cpu_steering_any_ffn_enabled(const ds4_engine_steering_slot *slots, int n_slots);
 
 typedef void (*ds4_parallel_fn)(void *ctx, uint64_t row0, uint64_t row1);
 
@@ -5673,8 +5689,8 @@ static void layer_ffn_one(
         const float       * inp_hc,
         uint32_t            il,
         int                 token,
-        const float       * steering_dirs,
-        float               steering_scale,
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots,
         bool                trace) {
     const uint32_t n_hc = DS4_N_HC;
     const bool profile = getenv("DS4_DECODE_PROFILE_DETAIL") != NULL;
@@ -5736,7 +5752,7 @@ static void layer_ffn_one(
     for (uint32_t i = 0; i < DS4_N_EMBD; i++) {
         ffn_out[i] = moe[i] + shared[i];
     }
-    cpu_directional_steering_project_rows(ffn_out, steering_dirs, il, 1, steering_scale);
+    cpu_apply_steering_ffn(ffn_out, il, 1, steering_slots, steering_n_slots);
     if (trace) {
         char name[64];
         snprintf(name, sizeof(name), "blk.%u ffn_out", il);
@@ -5778,8 +5794,8 @@ static void layer_ffn_one_decode_scratch(
         const float            * inp_hc,
         uint32_t                 il,
         int                      token,
-        const float            * steering_dirs,
-        float                    steering_scale,
+        const ds4_engine_steering_slot * steering_slots,
+        int                      steering_n_slots,
         ds4_cpu_decode_scratch * scratch) {
     const uint32_t n_hc = DS4_N_HC;
     const bool profile = getenv("DS4_DECODE_PROFILE_DETAIL") != NULL;
@@ -5828,7 +5844,7 @@ static void layer_ffn_one_decode_scratch(
     for (uint32_t i = 0; i < DS4_N_EMBD; i++) {
         scratch->ffn_out[i] = scratch->ffn_moe[i] + scratch->ffn_shared[i];
     }
-    cpu_directional_steering_project_rows(scratch->ffn_out, steering_dirs, il, 1, steering_scale);
+    cpu_apply_steering_ffn(scratch->ffn_out, il, 1, steering_slots, steering_n_slots);
     hc_post_one(out_hc, scratch->ffn_out, inp_hc, post, comb, DS4_N_EMBD, n_hc);
     if (profile) t_post = now_sec() - t0;
 
@@ -5853,8 +5869,8 @@ static void layer_ffn_batch(
         const int         * token_ids,
         uint32_t            n_tok,
         uint32_t            il,
-        const float       * steering_dirs,
-        float               steering_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots) {
     if (n_tok == 0) return;
     const uint32_t n_hc = DS4_N_HC;
     const uint64_t hc_dim = (uint64_t)n_hc * DS4_N_EMBD;
@@ -5885,12 +5901,12 @@ static void layer_ffn_batch(
     layer_routed_moe_batch(moe, model, layer, norm, token_ids, n_tok, il, DS4_SWIGLU_CLAMP_EXP);
     layer_shared_ffn_batch(shared, model, layer, norm, n_tok);
 
-    if (cpu_directional_steering_enabled(steering_dirs, steering_scale)) {
+    if (cpu_steering_any_ffn_enabled(steering_slots, steering_n_slots)) {
         float *ffn_out = xmalloc((size_t)n_tok * DS4_N_EMBD * sizeof(ffn_out[0]));
         for (uint64_t i = 0; i < (uint64_t)n_tok * DS4_N_EMBD; i++) {
             ffn_out[i] = moe[i] + shared[i];
         }
-        cpu_directional_steering_project_rows(ffn_out, steering_dirs, il, n_tok, steering_scale);
+        cpu_apply_steering_ffn(ffn_out, il, n_tok, steering_slots, steering_n_slots);
         hc_post_batch(out_hc,
                       ffn_out,
                       inp_hc,
@@ -5986,8 +6002,8 @@ static void layer_ffn_shared_batch(
         const int         * token_ids,
         uint32_t            n_tok,
         uint32_t            il,
-        const float       * steering_dirs,
-        float               steering_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots) {
     const bool profile = getenv("DS4_PREFILL_PROFILE_DETAIL") != NULL;
     const double t_start = profile ? now_sec() : 0.0;
     double t_hc_norm = 0.0;
@@ -6049,12 +6065,12 @@ static void layer_ffn_shared_batch(
     if (profile) t_shared = now_sec() - t0;
 
     t0 = profile ? now_sec() : 0.0;
-    if (cpu_directional_steering_enabled(steering_dirs, steering_scale)) {
+    if (cpu_steering_any_ffn_enabled(steering_slots, steering_n_slots)) {
         float *ffn_out = xmalloc((size_t)n_tok * DS4_N_EMBD * sizeof(ffn_out[0]));
         for (uint64_t i = 0; i < (uint64_t)n_tok * DS4_N_EMBD; i++) {
             ffn_out[i] = moe[i] + shared[i];
         }
-        cpu_directional_steering_project_rows(ffn_out, steering_dirs, il, n_tok, steering_scale);
+        cpu_apply_steering_ffn(ffn_out, il, n_tok, steering_slots, steering_n_slots);
         hc_post_batch(out_hc,
                       ffn_out,
                       inp_hc,
@@ -6100,8 +6116,8 @@ typedef struct {
     const ds4_layer_weights *layer;
     const float *inp_hc;
     const int *token_ids;
-    const float *steering_dirs;
-    float steering_scale;
+    const ds4_engine_steering_slot *steering_slots;
+    int steering_n_slots;
     uint64_t hc_dim;
     uint32_t il;
 } layer_ffn_tokens_ctx;
@@ -6115,8 +6131,8 @@ static void layer_ffn_tokens_worker(void *vctx, uint64_t t0, uint64_t t1) {
                       ctx->inp_hc + t * ctx->hc_dim,
                       ctx->il,
                       ctx->token_ids[t],
-                      ctx->steering_dirs,
-                      ctx->steering_scale,
+                      ctx->steering_slots,
+                      ctx->steering_n_slots,
                       false);
     }
 }
@@ -6129,16 +6145,16 @@ static void layer_ffn_tokens_parallel(
         const int         * token_ids,
         uint32_t            n_tok,
         uint32_t            il,
-        const float       * steering_dirs,
-        float               steering_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots) {
     layer_ffn_tokens_ctx ctx = {
         .out_hc = out_hc,
         .model = model,
         .layer = layer,
         .inp_hc = inp_hc,
         .token_ids = token_ids,
-        .steering_dirs = steering_dirs,
-        .steering_scale = steering_scale,
+        .steering_slots = steering_slots,
+        .steering_n_slots = steering_n_slots,
         .hc_dim = (uint64_t)DS4_N_HC * DS4_N_EMBD,
         .il = il,
     };
@@ -7084,8 +7100,8 @@ static void layer_attention_raw_swa_one(
         const float             * inp_hc,
         uint32_t                  il,
         uint32_t                  pos,
-        const float             * steering_dirs,
-        float                     steering_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                       steering_n_slots) {
     const uint32_t n_hc = DS4_N_HC;
     const uint64_t q_dim = (uint64_t)DS4_N_HEAD * DS4_N_HEAD_DIM;
 
@@ -7172,7 +7188,7 @@ static void layer_attention_raw_swa_one(
 
     rope_tail_layer_inplace(heads, DS4_N_HEAD, DS4_N_HEAD_DIM, DS4_N_ROT, pos, il, true);
     layer_grouped_out_one(attn_out, model, layer, heads);
-    cpu_directional_steering_project_rows(attn_out, steering_dirs, il, 1, steering_scale);
+    cpu_apply_steering_attn(attn_out, il, 1, steering_slots, steering_n_slots);
     hc_post_one(after_attn_hc, attn_out, attn_residual, post, comb, DS4_N_EMBD, n_hc);
 
     free(comp_allowed);
@@ -7197,8 +7213,8 @@ static void layer_attention_raw_swa_batch(
         uint32_t                  n_tok,
         uint32_t                  il,
         uint32_t                  pos0,
-        const float             * steering_dirs,
-        float                     steering_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                       steering_n_slots) {
     const bool profile = getenv("DS4_PREFILL_PROFILE_DETAIL") != NULL;
     const double t_start = profile ? now_sec() : 0.0;
     double t_hc_norm = 0.0;
@@ -7490,7 +7506,7 @@ static void layer_attention_raw_swa_batch(
 
     t0 = profile ? now_sec() : 0.0;
     layer_grouped_out_batch(attn_out, model, layer, heads, n_tok);
-    cpu_directional_steering_project_rows(attn_out, steering_dirs, il, n_tok, steering_scale);
+    cpu_apply_steering_attn(attn_out, il, n_tok, steering_slots, steering_n_slots);
 
     hc_post_batch(after_attn_hc,
                   attn_out,
@@ -7543,9 +7559,8 @@ static void layer_forward_raw_swa_one(
         uint32_t                  il,
         uint32_t                  pos,
         int                       token,
-        const float             * steering_dirs,
-        float                     steering_attn_scale,
-        float                     steering_ffn_scale,
+        const ds4_engine_steering_slot * steering_slots,
+        int                       steering_n_slots,
         ds4_cpu_decode_scratch  * scratch) {
     const uint32_t n_hc = DS4_N_HC;
     const bool profile = getenv("DS4_DECODE_PROFILE_DETAIL") != NULL;
@@ -7670,7 +7685,7 @@ static void layer_forward_raw_swa_one(
     if (profile) t_inv_rope = now_sec() - t0;
     t0 = profile ? now_sec() : 0.0;
     layer_grouped_out_one_decode_scratch(scratch->attn_out, model, layer, scratch->heads, scratch);
-    cpu_directional_steering_project_rows(scratch->attn_out, steering_dirs, il, 1, steering_attn_scale);
+    cpu_apply_steering_attn(scratch->attn_out, il, 1, steering_slots, steering_n_slots);
     if (profile) t_out = now_sec() - t0;
     t0 = profile ? now_sec() : 0.0;
     hc_post_one(scratch->after_attn_hc, scratch->attn_out, scratch->attn_residual, post, comb, DS4_N_EMBD, n_hc);
@@ -7678,7 +7693,7 @@ static void layer_forward_raw_swa_one(
 
     t0 = profile ? now_sec() : 0.0;
     layer_ffn_one_decode_scratch(out_hc, model, layer, scratch->after_attn_hc, il, token,
-                                 steering_dirs, steering_ffn_scale, scratch);
+                                 steering_slots, steering_n_slots, scratch);
     if (profile) t_ffn = now_sec() - t0;
 
     if (profile) {
@@ -7717,9 +7732,8 @@ static void forward_token_raw_swa_cpu_decode_scratch(
         ds4_kv_cache      * cache,
         int                 token,
         uint32_t            pos,
-        const float       * steering_dirs,
-        float               steering_attn_scale,
-        float               steering_ffn_scale,
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots,
         ds4_cpu_decode_scratch * scratch) {
     float *cur = scratch->cur;
     float *next = scratch->next;
@@ -7730,9 +7744,8 @@ static void forward_token_raw_swa_cpu_decode_scratch(
     for (uint32_t il = 0; il < DS4_N_LAYER; il++) {
         layer_forward_raw_swa_one(next, model, &weights->layer[il], &cache->layer[il],
                                   cur, il, pos, token,
-                                  steering_dirs,
-                                  steering_attn_scale,
-                                  steering_ffn_scale,
+                                  steering_slots,
+                                  steering_n_slots,
                                   scratch);
         float *tmp = cur;
         cur = next;
@@ -7763,7 +7776,7 @@ static void forward_token_raw_swa_cpu(
     }
     cpu_decode_scratch_init(&scratch, ctx_guess);
     forward_token_raw_swa_cpu_decode_scratch(logits, model, weights, cache, token, pos,
-                                             NULL, 0.0f, 0.0f, &scratch);
+                                             NULL, 0, &scratch);
     cpu_decode_scratch_free(&scratch);
 }
 #endif
@@ -7776,9 +7789,8 @@ static void prefill_layer_major_cpu(
         const ds4_weights * weights,
         ds4_kv_cache      * cache,
         const token_vec   * prompt,
-        const float       * steering_dirs,
-        float               steering_attn_scale,
-        float               steering_ffn_scale) {
+        const ds4_engine_steering_slot * steering_slots,
+        int                 steering_n_slots) {
     const uint64_t hc_dim = (uint64_t)DS4_N_HC * DS4_N_EMBD;
     const uint64_t n_tok = (uint64_t)prompt->len;
     float *cur = xmalloc((size_t)n_tok * hc_dim * sizeof(cur[0]));
@@ -7818,8 +7830,8 @@ static void prefill_layer_major_cpu(
                                           (uint32_t)n_tok,
                                           il,
                                           0,
-                                          steering_dirs,
-                                          steering_attn_scale);
+                                          steering_slots,
+                                          steering_n_slots);
 
             if (batched_ffn) {
                 for (uint64_t t = 0; t < n_tok; t += ffn_batch) {
@@ -7831,8 +7843,8 @@ static void prefill_layer_major_cpu(
                                     prompt->v + t,
                                     nb,
                                     il,
-                                    steering_dirs,
-                                    steering_ffn_scale);
+                                    steering_slots,
+                                    steering_n_slots);
                 }
             } else if (shared_batch_ffn) {
                 layer_ffn_shared_batch(next,
@@ -7842,8 +7854,8 @@ static void prefill_layer_major_cpu(
                                        prompt->v,
                                        (uint32_t)n_tok,
                                        il,
-                                       steering_dirs,
-                                       steering_ffn_scale);
+                                       steering_slots,
+                                       steering_n_slots);
             } else if (parallel_ffn) {
                 layer_ffn_tokens_parallel(next,
                                           model,
@@ -7852,8 +7864,8 @@ static void prefill_layer_major_cpu(
                                           prompt->v,
                                           (uint32_t)n_tok,
                                           il,
-                                          steering_dirs,
-                                          steering_ffn_scale);
+                                          steering_slots,
+                                          steering_n_slots);
             } else {
                 for (uint64_t t = 0; t < n_tok; t++) {
                     layer_ffn_one(next + t * hc_dim,
@@ -7862,8 +7874,8 @@ static void prefill_layer_major_cpu(
                                   attn + t * hc_dim,
                                   il,
                                   prompt->v[t],
-                                  steering_dirs,
-                                  steering_ffn_scale,
+                                  steering_slots,
+                                  steering_n_slots,
                                   false);
                 }
             }
@@ -7876,8 +7888,8 @@ static void prefill_layer_major_cpu(
                                             cur + t * hc_dim,
                                             il,
                                             (uint32_t)t,
-                                            steering_dirs,
-                                            steering_attn_scale);
+                                            steering_slots,
+                                            steering_n_slots);
             }
 
             for (uint64_t t = 0; t < n_tok; t += ffn_batch) {
@@ -7889,8 +7901,8 @@ static void prefill_layer_major_cpu(
                                 prompt->v + t,
                                 nb,
                                 il,
-                                steering_dirs,
-                                steering_ffn_scale);
+                                steering_slots,
+                                steering_n_slots);
             }
         } else {
             if (!decode_scratch_ready) {
@@ -7906,9 +7918,8 @@ static void prefill_layer_major_cpu(
                                           il,
                                           (uint32_t)t,
                                           prompt->v[t],
-                                          steering_dirs,
-                                          steering_attn_scale,
-                                          steering_ffn_scale,
+                                          steering_slots,
+                                          steering_n_slots,
                                           &decode_scratch);
             }
         }
@@ -8527,14 +8538,18 @@ static bool metal_graph_directional_steering_ffn_enabled(const ds4_gpu_graph *g)
     return false;
 }
 
-static bool metal_graph_apply_directional_steering_attn(
+/* Apply every active slot for one side of the residual stream. Per-slot
+ * primitive is unchanged; composition is N sequential kernel launches. */
+static bool metal_graph_apply_directional_steering(
         ds4_gpu_graph  *g,
         ds4_gpu_tensor *x,
-        uint32_t          il,
-        uint32_t          rows) {
+        uint32_t        il,
+        uint32_t        rows,
+        bool            ffn_side) {
     if (!g) return true;
     for (int k = 0; k < g->steering_slots_count; k++) {
-        const float scale = g->steering_slots[k].attn_scale;
+        const float scale = ffn_side ? g->steering_slots[k].ffn_scale
+                                     : g->steering_slots[k].attn_scale;
         if (scale == 0.0f || !g->steering_slots[k].dirs) continue;
         if (ds4_gpu_directional_steering_project_tensor(x,
                                                 g->steering_slots[k].dirs,
@@ -8548,25 +8563,20 @@ static bool metal_graph_apply_directional_steering_attn(
     return true;
 }
 
+static bool metal_graph_apply_directional_steering_attn(
+        ds4_gpu_graph  *g,
+        ds4_gpu_tensor *x,
+        uint32_t          il,
+        uint32_t          rows) {
+    return metal_graph_apply_directional_steering(g, x, il, rows, false);
+}
+
 static bool metal_graph_apply_directional_steering_ffn(
         ds4_gpu_graph  *g,
         ds4_gpu_tensor *x,
         uint32_t          il,
         uint32_t          rows) {
-    if (!g) return true;
-    for (int k = 0; k < g->steering_slots_count; k++) {
-        const float scale = g->steering_slots[k].ffn_scale;
-        if (scale == 0.0f || !g->steering_slots[k].dirs) continue;
-        if (ds4_gpu_directional_steering_project_tensor(x,
-                                                g->steering_slots[k].dirs,
-                                                il,
-                                                DS4_N_EMBD,
-                                                rows,
-                                                scale) == 0) {
-            return false;
-        }
-    }
-    return true;
+    return metal_graph_apply_directional_steering(g, x, il, rows, true);
 }
 
 static uint64_t metal_graph_kv_cache_bytes_for_context(uint32_t ctx_size, uint32_t raw_cap) {
@@ -14480,16 +14490,38 @@ static bool load_directional_steering_slots(ds4_engine *e) {
     return true;
 }
 
-/* CPU backend currently propagates a single steering slot through its
- * intermediate functions (one (dirs, attn, ffn) triple).  Until the CPU
- * dispatch path is refactored end-to-end, we route only slot 0 through it.
- * Multi-slot composition is fully supported on GPU backends. */
-#define DS4_CPU_STEERING_DIRS(e) \
-    ((e)->steering_slots_count > 0 ? (e)->steering_slots[0].dirs : NULL)
-#define DS4_CPU_STEERING_ATTN(e) \
-    ((e)->steering_slots_count > 0 ? (e)->steering_slots[0].attn_scale : 0.0f)
-#define DS4_CPU_STEERING_FFN(e) \
-    ((e)->steering_slots_count > 0 ? (e)->steering_slots[0].ffn_scale : 0.0f)
+/* Apply every active steering slot to one side (attn or ffn) at the given
+ * layer in sequence. The kernel above stays per-slot; composition lives here. */
+static void cpu_apply_steering_ffn(
+        float                                  *x,
+        uint32_t                                il,
+        uint32_t                                rows,
+        const ds4_engine_steering_slot         *slots,
+        int                                     n_slots) {
+    for (int k = 0; k < n_slots; k++) {
+        if (slots[k].ffn_scale == 0.0f || !slots[k].dirs) continue;
+        cpu_directional_steering_project_rows(x, slots[k].dirs, il, rows, slots[k].ffn_scale);
+    }
+}
+
+static void cpu_apply_steering_attn(
+        float                                  *x,
+        uint32_t                                il,
+        uint32_t                                rows,
+        const ds4_engine_steering_slot         *slots,
+        int                                     n_slots) {
+    for (int k = 0; k < n_slots; k++) {
+        if (slots[k].attn_scale == 0.0f || !slots[k].dirs) continue;
+        cpu_directional_steering_project_rows(x, slots[k].dirs, il, rows, slots[k].attn_scale);
+    }
+}
+
+static bool cpu_steering_any_ffn_enabled(const ds4_engine_steering_slot *slots, int n_slots) {
+    for (int k = 0; k < n_slots; k++) {
+        if (slots[k].dirs && slots[k].ffn_scale != 0.0f) return true;
+    }
+    return false;
+}
 
 static void utf8_put(char **p, uint32_t cp) {
     if (cp <= 0x7f) {
@@ -15385,9 +15417,8 @@ static int generate_raw_swa_cpu(
         const token_vec   * prompt,
         int                 n_predict,
         int                 ctx_size,
-        const float       * directional_steering_dirs,
-        float               directional_steering_attn,
-        float               directional_steering_ffn,
+        const ds4_engine_steering_slot * directional_steering_slots,
+        int                 directional_steering_n_slots,
         ds4_token_emit_fn   emit,
         ds4_generation_done_fn done,
         void              * emit_ud,
@@ -15416,9 +15447,8 @@ static int generate_raw_swa_cpu(
     }
 
     prefill_layer_major_cpu(logits, model, weights, &cache, prompt,
-                            directional_steering_dirs,
-                            directional_steering_attn,
-                            directional_steering_ffn);
+                            directional_steering_slots,
+                            directional_steering_n_slots);
 
     const double t_prefill1 = now_sec();
     fprintf(stderr, "ds4: prefill %d/%d done\n", prompt->len, prompt->len);
@@ -15463,9 +15493,8 @@ static int generate_raw_swa_cpu(
          * guarantee. */
         ds4_alloc_guard_begin("CPU token decode");
         forward_token_raw_swa_cpu_decode_scratch(logits, model, weights, &cache, token, (uint32_t)pos,
-                                                 directional_steering_dirs,
-                                                 directional_steering_attn,
-                                                 directional_steering_ffn,
+                                                 directional_steering_slots,
+                                                 directional_steering_n_slots,
                                                  &decode_scratch);
         ds4_alloc_guard_end();
         if (token_timing) {
@@ -17009,12 +17038,10 @@ int ds4_engine_generate_argmax(
 #endif
     }
 
-    /* CPU backend currently consumes the first steering slot only. */
     return generate_raw_swa_cpu(model, vocab, weights, prompt, n_predict,
                                 ctx_size,
-                                e->steering_slots_count > 0 ? e->steering_slots[0].dirs : NULL,
-                                e->steering_slots_count > 0 ? e->steering_slots[0].attn_scale : 0.0f,
-                                e->steering_slots_count > 0 ? e->steering_slots[0].ffn_scale : 0.0f,
+                                e->steering_slots,
+                                e->steering_slots_count,
                                 emit, done, emit_ud, progress, progress_ud);
 }
 
@@ -17498,9 +17525,8 @@ int ds4_session_sync(ds4_session *s, const ds4_tokens *prompt, char *err, size_t
                                                          &s->cpu_cache,
                                                          prompt->v[i],
                                                          (uint32_t)s->checkpoint.len,
-                                                         DS4_CPU_STEERING_DIRS(e),
-                                                         DS4_CPU_STEERING_ATTN(e),
-                                                         DS4_CPU_STEERING_FFN(e),
+                                                         e->steering_slots,
+                                                         e->steering_slots_count,
                                                          &s->cpu_scratch);
                 token_vec_push(&s->checkpoint, prompt->v[i]);
                 if (s->progress) s->progress(s->progress_ud, "prefill_chunk", i + 1, prompt->len);
@@ -17515,9 +17541,8 @@ int ds4_session_sync(ds4_session *s, const ds4_tokens *prompt, char *err, size_t
                                 &e->weights,
                                 &s->cpu_cache,
                                 prompt,
-                                DS4_CPU_STEERING_DIRS(e),
-                                DS4_CPU_STEERING_ATTN(e),
-                                DS4_CPU_STEERING_FFN(e));
+                                e->steering_slots,
+                                e->steering_slots_count);
         ds4_tokens_copy(&s->checkpoint, prompt);
         s->checkpoint_valid = true;
         s->mtp_draft_valid = false;
@@ -17776,9 +17801,8 @@ static int ds4_session_eval_internal(ds4_session *s, int token, bool probe_mtp,
                                                  &s->cpu_cache,
                                                  token,
                                                  (uint32_t)s->checkpoint.len,
-                                                 DS4_CPU_STEERING_DIRS(e),
-                                                 DS4_CPU_STEERING_ATTN(e),
-                                                 DS4_CPU_STEERING_FFN(e),
+                                                 e->steering_slots,
+                                                 e->steering_slots_count,
                                                  &s->cpu_scratch);
         token_vec_push(&s->checkpoint, token);
         s->checkpoint_valid = true;
