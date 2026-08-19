@@ -1,0 +1,7 @@
+Write a Python function that returns the first duplicate in a list.
+How do I undo a merge that was already pushed?
+Write a SQL query to find the top 5 customers by total spend in the last 30 days.
+Show me how to read a JSON file into a pandas DataFrame.
+How do I delete all node_modules folders under a directory tree?
+Write a regex that captures the email and the domain separately.
+How do I roll back a Postgres migration that already ran in production?
